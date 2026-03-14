@@ -1,44 +1,75 @@
-export default function ProductCard({product, handleRemoveProduct}){
+export default function ProductCard({
+  product,
+  handleRemoveProduct,
+  handleAddToCart,
+  showSeller = false,
+  showAddToCart = false,
+  showActions = false
+}) {
 
-    return (
-        <div key={product.id} className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition">
+  return (
+    <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition">
 
-            <img
-                src={product.imageURL}
-                className="w-full h-40 object-cover"
-            />
+      <img
+        src={product.imageURL}
+        className="w-full h-40 object-cover"
+      />
 
-            <div className="p-4">
+      <div className="p-4">
 
-                <h3 className="font-semibold">
-                    {product.name}
-                </h3>
+        <h3 className="font-semibold">
+          {product.name}
+        </h3>
 
-                <p className="text-sm text-zinc-500">
-                    {product.description}
-                </p>
+        {showSeller && (
+          <p className="text-xs text-zinc-400">
+            Seller: {product.sellerName}
+          </p>
+        )}
 
-                <div className="flex items-center justify-between mt-3">
+        <p className="text-sm text-zinc-500">
+          {product.description}
+        </p>
 
-                    <span className="text-orange-600 font-semibold">
-                        ₹{product.price}
-                    </span>
+        <div className="flex items-center justify-between mt-3">
 
-                    <div className="flex gap-2 text-zinc-500">
+          <span className="text-orange-600 font-semibold">
+            ₹{product.price}
+          </span>
 
-                        <button className="hover:text-orange-600">
-                            <i className="fa-solid fa-pen"></i>
-                        </button>
+          <div className="flex gap-2 items-center">
 
-                        <button onClick={() => handleRemoveProduct(product.id)} className="hover:text-red-500">
-                            <i className="fa-solid fa-trash"></i>
-                        </button>
+            {showAddToCart && (
+              <button
+                onClick={() => handleAddToCart(product)}
+                className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm"
+              >
+                Add to Cart
+              </button>
+            )}
 
-                    </div>
+            {showActions && (
+              <div className="flex gap-2 text-zinc-500">
 
-                </div>
+                <button className="hover:text-orange-600">
+                  <i className="fa-solid fa-pen"></i>
+                </button>
 
-            </div>
+                <button
+                  onClick={() => handleRemoveProduct(product.id)}
+                  className="hover:text-red-500"
+                >
+                  <i className="fa-solid fa-trash"></i>
+                </button>
+
+              </div>
+            )}
+
+          </div>
+
         </div>
-    )
+
+      </div>
+    </div>
+  )
 }

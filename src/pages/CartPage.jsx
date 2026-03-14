@@ -1,6 +1,48 @@
+import { useEffect, useState } from "react";
+import CartItem from "../components/CartItem";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchMyCart, removeFromCart } from "../store/cartSlice";
+import Loading from "../components/Loading"
+import DangerConfirm from "../components/DangerConfirm";
+import toast from "react-hot-toast";
+import EmptyState from "../components/EmptyState";
+
 export default function CartPage() {
+  const dispatch = useDispatch()
+  const { items, loading } = useSelector(store => store.cart)
+  const [showConfirm, setShowConfirm] = useState(null)
+
+  useEffect(() => {
+    dispatch(fetchMyCart())
+  }, [])
+
+  const confirmRemoveItem = (itemId) => {
+    setShowConfirm(itemId)
+  }
+
+  const removeCartItem = async() => {
+    toast.promise(
+      dispatch(removeFromCart(showConfirm)),
+      {
+        loading: "removing from cart...",
+        success: "Item removed from cart.",
+        error: "Failed to remove Item!"
+      }
+    )
+    
+    setShowConfirm(null)
+  }
+
   return (
+
     <div className="max-w-7xl mx-auto px-6 py-10">
+      {
+        showConfirm &&
+        <DangerConfirm
+          onCancel={() => setShowConfirm(null)}
+          onConfirm={removeCartItem}
+        />
+      }
 
       {/* Title */}
       <h2 className="text-2xl font-semibold mb-8 flex items-center gap-3">
@@ -9,56 +51,19 @@ export default function CartPage() {
       </h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        < div className="lg:col-span-8 space-y-4">
+          {
+            loading ?
+              <Loading notFullPage={true} />
+              :items.length === 0 ?
+              <EmptyState/>
+              :
+              items.map(cartItem => {
+                return (<CartItem key={cartItem.id} cartItem={cartItem} confirmRemoveItem={confirmRemoveItem} />)
+              })
 
-        {/* Cart Items */}
-        <div className="lg:col-span-8 space-y-4">
 
-          {/* Dummy Item */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 flex gap-5 items-center">
-
-            <img
-              src="https://picsum.photos/100"
-              className="w-24 h-24 object-cover rounded-lg"
-            />
-
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg">
-                Apple iPhone 13
-              </h3>
-
-              <p className="text-sm text-zinc-500">
-                Excellent condition • Kozhikode
-              </p>
-
-              <div className="mt-2 font-semibold text-orange-600 text-lg">
-                ₹45,000
-              </div>
-            </div>
-
-            {/* Quantity */}
-            <div className="flex items-center gap-3">
-
-              <button className="w-8 h-8 border rounded-md hover:bg-zinc-100">
-                -
-              </button>
-
-              <span className="font-medium">
-                1
-              </span>
-
-              <button className="w-8 h-8 border rounded-md hover:bg-zinc-100">
-                +
-              </button>
-
-            </div>
-
-            {/* Remove */}
-            <button className="text-zinc-400 hover:text-red-500 text-lg">
-              <i className="fa-solid fa-trash"></i>
-            </button>
-
-          </div>
-
+          }
         </div>
 
         {/* Order Summary */}
@@ -100,6 +105,6 @@ export default function CartPage() {
         </div>
 
       </div>
-    </div>
+    </div >
   )
 }

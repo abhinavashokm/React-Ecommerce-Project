@@ -1,6 +1,31 @@
 import { Link } from "react-router-dom"
+import { fetchPublicProducts } from "../store/productSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { useEffect } from "react"
+import ProductCard from "../components/ProductCard"
+import Loading from "../components/Loading"
+import { addToCart } from "../store/cartSlice"
+import toast from "react-hot-toast"
 
 const LandingPage = () => {
+  const dispatch = useDispatch()
+  const { publicProducts, loading } = useSelector(store => store.products)
+
+  useEffect(() => {
+    dispatch(fetchPublicProducts())
+  }, [])
+
+  const handleAddToCart = (product) => {
+    toast.promise(
+      dispatch(addToCart(product)).unwrap(),
+      {
+        loading: "Adding to cart...",
+        success: "Added to cart",
+        error: "Failed to add item"
+      }
+    )
+
+  }
   return (
     <div>
 
@@ -38,125 +63,28 @@ const LandingPage = () => {
             Featured Listings
           </h2>
 
-          <button className="text-orange-600 text-sm font-medium flex items-center gap-2 hover:underline">
-            View all
-            <i className="fa-solid fa-arrow-right"></i>
-          </button>
-
         </div>
 
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {
+          loading ?
+            <Loading notFullPage={true} />
+            :
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
 
-          {/* Product 1 */}
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition cursor-pointer">
-
-            <img
-              src="https://picsum.photos/400/300"
-              className="w-full h-40 object-cover"
-            />
-
-            <div className="p-3">
-
-              <h3 className="font-medium text-sm line-clamp-1">
-                Apple iPhone 13
-              </h3>
-
-              <p className="text-orange-600 font-semibold mt-1">
-                ₹45,000
-              </p>
-
-              <p className="text-xs text-zinc-500 mt-1">
-                Kozhikode
-              </p>
+              {/* Product 1 */}
+              {
+                publicProducts.map(product => {
+                  return (
+                    <ProductCard key={product.id} product={product} showAddToCart={true} showSeller={true} handleAddToCart={handleAddToCart} />
+                  )
+                })
+              }
 
             </div>
+        }
 
-          </div>
-
-
-          {/* Product 2 */}
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition cursor-pointer">
-
-            <img
-              src="https://picsum.photos/401/300"
-              className="w-full h-40 object-cover"
-            />
-
-            <div className="p-3">
-
-              <h3 className="font-medium text-sm">
-                Gaming Laptop RTX 3060
-              </h3>
-
-              <p className="text-orange-600 font-semibold mt-1">
-                ₹78,000
-              </p>
-
-              <p className="text-xs text-zinc-500 mt-1">
-                Kochi
-              </p>
-
-            </div>
-
-          </div>
-
-
-          {/* Product 3 */}
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition cursor-pointer">
-
-            <img
-              src="https://picsum.photos/402/300"
-              className="w-full h-40 object-cover"
-            />
-
-            <div className="p-3">
-
-              <h3 className="font-medium text-sm">
-                Office Chair Ergonomic
-              </h3>
-
-              <p className="text-orange-600 font-semibold mt-1">
-                ₹6,500
-              </p>
-
-              <p className="text-xs text-zinc-500 mt-1">
-                Calicut
-              </p>
-
-            </div>
-
-          </div>
-
-
-          {/* Product 4 */}
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden hover:shadow-md transition cursor-pointer">
-
-            <img
-              src="https://picsum.photos/403/300"
-              className="w-full h-40 object-cover"
-            />
-
-            <div className="p-3">
-
-              <h3 className="font-medium text-sm">
-                Sony Wireless Headphones
-              </h3>
-
-              <p className="text-orange-600 font-semibold mt-1">
-                ₹18,000
-              </p>
-
-              <p className="text-xs text-zinc-500 mt-1">
-                Trivandrum
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
 
       </div>
 

@@ -1,13 +1,23 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchProductsOfSeller, addProduct, deleteProduct } from "../firebase/productService";
+import { fetchProductsOfSeller, addProduct, deleteProduct, fetchOtherUsersProducts } from "../firebase/productService";
 
-const getUserId = (getState) =>  getState().auth.user.id
+const getUserId = (getState) => getState().auth.user.id
+const getUserName = (getState) => getState().auth.user.displayName
 
 export const fetchMyProducts = createAsyncThunk(
     "products/fetchMyProducts",
-    async (payload, {getState}) => {
+    async (payload, { getState }) => {
         const userId = getUserId(getState)
         const products = await fetchProductsOfSeller(userId)
+        return products
+    }
+)
+
+export const fetchPublicProducts = createAsyncThunk(
+    "products/fetchAllProducts",
+    async (payload, {getState}) => {
+        const userId = getUserId(getState)
+        const products = await fetchOtherUsersProducts(userId)
         return products
     }
 )
@@ -16,9 +26,10 @@ export const sellProduct = createAsyncThunk(
     "products/sellProduct",
     async (payload, { dispatch, getState }) => {
         const userId = getUserId(getState)
+        const displayName = getUserName(getState)
 
-        await addProduct({ ...payload, sellerId: userId })
-        dispatch(fetchMyProducts(userId))
+        await addProduct({ ...payload, sellerId: userId, sellerName: displayName})
+        dispatch(fetchMyProducts())
     }
 )
 
@@ -33,9 +44,9 @@ export const removeProduct = createAsyncThunk(
 const productsSlice = createSlice({
     name: 'products',
     initialState: {
-        allProducts: [],
+        publicProducts: [],
         myProducts: [],
-        loading: false
+        loading: true
     },
     reducers: {
         setAllProducts(state, action) {
@@ -56,6 +67,13 @@ const productsSlice = createSlice({
             }).addCase(sellProduct.fulfilled, (state) => {
                 state.loading = false
             }).addCase(sellProduct.rejected, (state) => {
+                state.loading = false
+            }).addCase(fetchPublicProducts.pending, (state) => {
+                state.loading = true
+            }).addCase(fetchPublicProducts.fulfilled, (state, action) => {
+                state.loading = false
+                state.publicProducts = action.payload
+            }).addCase(fetchPublicProducts.rejected, (state) => {
                 state.loading = false
             })
     }

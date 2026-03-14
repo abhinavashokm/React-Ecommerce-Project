@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchMyProducts, removeProduct } from "../store/productSlice";
 import Loading from "../components/Loading"
 import ProductCard from "../components/ProductCard";
+import EmptyState from "../components/EmptyState";
 
 export default function SellPage() {
   const [modal, setModal] = useState(null)
@@ -56,19 +57,24 @@ export default function SellPage() {
       </div>
 
       {/* loading spinner */}
-      { loading && <Loading />}
+      {loading ? <Loading notFullPage={true} />
+        : myProducts.length === 0 ?
+        <EmptyState/>
+        :
 
-      {/* Listings Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {
-          myProducts.map((product) => {
-            return (
-              <ProductCard product={product} handleRemoveProduct={handleRemoveProduct} />
-            )
-          })
-        }
-      </div>
+        < div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {
+            myProducts.map((product) => {
+              return (
+                <ProductCard product={product} handleRemoveProduct={handleRemoveProduct} showActions={true} />
+              )
+            })
+          }
+        </div>
+      }
 
-    </div>
+
+
+    </div >
   )
 }
