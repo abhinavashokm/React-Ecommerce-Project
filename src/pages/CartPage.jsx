@@ -3,46 +3,38 @@ import CartItem from "../components/CartItem";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchMyCart, removeFromCart } from "../store/cartSlice";
 import Loading from "../components/Loading"
-import DangerConfirm from "../components/DangerConfirm";
 import toast from "react-hot-toast";
 import EmptyState from "../components/EmptyState";
+import { Link } from "react-router-dom";
+import { calculateSubtotal } from "../firebase/cartService";
 
 export default function CartPage() {
   const dispatch = useDispatch()
   const { items, loading } = useSelector(store => store.cart)
-  const [showConfirm, setShowConfirm] = useState(null)
+  const [subtotal, setSubtotal] = useState(0)
 
   useEffect(() => {
     dispatch(fetchMyCart())
   }, [])
 
-  const confirmRemoveItem = (itemId) => {
-    setShowConfirm(itemId)
-  }
+  useEffect(() => {
+    setSubtotal(calculateSubtotal(items))
+  }, [items])
 
-  const removeCartItem = async() => {
+  const removeCartItem = async (cartItemId) => {
     toast.promise(
-      dispatch(removeFromCart(showConfirm)),
+      dispatch(removeFromCart(cartItemId)),
       {
         loading: "removing from cart...",
         success: "Item removed from cart.",
         error: "Failed to remove Item!"
       }
     )
-    
-    setShowConfirm(null)
   }
 
   return (
 
     <div className="max-w-7xl mx-auto px-6 py-10">
-      {
-        showConfirm &&
-        <DangerConfirm
-          onCancel={() => setShowConfirm(null)}
-          onConfirm={removeCartItem}
-        />
-      }
 
       {/* Title */}
       <h2 className="text-2xl font-semibold mb-8 flex items-center gap-3">
@@ -55,12 +47,12 @@ export default function CartPage() {
           {
             loading ?
               <Loading notFullPage={true} />
-              :items.length === 0 ?
-              <EmptyState/>
-              :
-              items.map(cartItem => {
-                return (<CartItem key={cartItem.id} cartItem={cartItem} confirmRemoveItem={confirmRemoveItem} />)
-              })
+              : items.length === 0 ?
+                <EmptyState />
+                :
+                items.map(cartItem => {
+                  return (<CartItem key={cartItem.id} cartItem={cartItem} removeCartItem={removeCartItem} />)
+                })
 
 
           }
@@ -79,7 +71,7 @@ export default function CartPage() {
 
               <div className="flex justify-between">
                 <span className="text-zinc-600">Subtotal</span>
-                <span className="font-medium">₹45,000</span>
+                <span className="font-medium">₹{subtotal}</span>
               </div>
 
               <div className="flex justify-between">
@@ -93,12 +85,12 @@ export default function CartPage() {
 
             <div className="flex justify-between text-lg font-semibold">
               <span>Total</span>
-              <span>₹45,000</span>
+              <span>₹{subtotal}</span>
             </div>
 
-            <button className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition">
+            <Link to="/checkout" className=" inline-flex items-center justify-center mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition">
               Proceed to Checkout
-            </button>
+            </Link>
 
           </div>
 

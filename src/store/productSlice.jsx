@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchProductsOfSeller, addProduct, deleteProduct, fetchOtherUsersProducts } from "../firebase/productService";
+import { fetchProductsOfSeller, addProduct, deleteProduct, fetchOtherUsersProducts, editProductService } from "../firebase/productService";
 
 const getUserId = (getState) => getState().auth.user.id
 const getUserName = (getState) => getState().auth.user.displayName
@@ -27,8 +27,15 @@ export const sellProduct = createAsyncThunk(
     async (payload, { dispatch, getState }) => {
         const userId = getUserId(getState)
         const displayName = getUserName(getState)
-
         await addProduct({ ...payload, sellerId: userId, sellerName: displayName})
+        dispatch(fetchMyProducts())
+    }
+)
+
+export const editProduct = createAsyncThunk(
+    "products/editProduct",
+    async (payload, { dispatch }) => {
+        await editProductService(payload)
         dispatch(fetchMyProducts())
     }
 )

@@ -1,24 +1,42 @@
 import { useForm } from "react-hook-form"
-import { sellProduct } from "../store/productSlice"
+import { editProduct, sellProduct } from "../store/productSlice"
 import { useDispatch } from "react-redux"
 import { uploadProductImage } from "../cloudinary/config"
+import toast from "react-hot-toast"
+import { useState } from "react"
 
-export default function ProductFormModal({ onClose }) {
-  const { register, handleSubmit, watch } = useForm()
+
+export default function ProductFormModal({ mode, onClose, prefillData }) {
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      product_name: prefillData?.name,
+      price: prefillData?.price,
+      description: prefillData?.description,
+    }
+  })
+
   const dispatch = useDispatch()
-  const image = watch('image')
+  const [imagePreview, setImagePreview] = useState(prefillData?.imageURL)
+  const imageRegister = register("image")
+
+  const postForm = async(data) => {
+    const file = data.image[0]
+    const imageURL = file ? await uploadProductImage(file) : prefillData?.imageURL
+
+    const reduxThunkFunction = mode === 'edit' ? editProduct : sellProduct
+    await dispatch(reduxThunkFunction({ ...data, imageURL, id: prefillData?.id })).unwrap()
+  }
 
   const onSubmit = async (data) => {
-    const file = data.image[0]
-    let imageURL = null
-
-    if (file) {
-      imageURL = await uploadProductImage(file)
-    }
-    console.log(imageURL)
-    dispatch(sellProduct({ ...data, imageURL }))
+    toast.promise((postForm(data)),
+      {
+        loading: `${mode === 'edit' ? "Saving" : "Adding"} product...`,
+        success: `Product ${mode === 'edit' ? "saved" : "added"}!`,
+        error: `Failed to ${mode === 'edit' ? "edit" : "add"} product!`
+      })
     onClose()
   }
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999] p-6">
 
@@ -87,15 +105,19 @@ export default function ProductFormModal({ onClose }) {
               accept="image/*"
               className="hidden"
               id="product-image"
-              {...register("image")}
+              {...imageRegister}
+              onChange={(e) => {
+                imageRegister.onChange(e)
+                setImagePreview(URL.createObjectURL(e.target.files[0]))
+              }}
             />
             <label
               htmlFor="product-image"
               className="border-2 border-dashed border-zinc-300 rounded-xl h-36 flex flex-col items-center justify-center text-zinc-400 cursor-pointer hover:border-orange-400"
             >
               {
-                image?.[0] ?
-                  <img src={URL.createObjectURL(image[0])} alt="" className="h-full w-full object-cover rounded-xl" />
+                imagePreview ?
+                  <img src={imagePreview} alt="" className="h-full w-full object-cover rounded-xl" />
                   :
                   <>
                     <i className="fa-solid fa-camera text-xl mb-2"></i>
@@ -119,7 +141,7 @@ export default function ProductFormModal({ onClose }) {
           </button>
 
           <button onClick={handleSubmit(onSubmit)} className="flex-1 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">
-            Add Product
+            {mode === 'edit' ? "Save Changes" : "Add Product"}
           </button>
         </div>
 

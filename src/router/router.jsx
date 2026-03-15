@@ -6,6 +6,8 @@ import LandingPage from "../pages/LandingPage";
 import SignUpPage from "../pages/SignUpPage";
 import CartPage from "../pages/CartPage";
 import SellPage from "../pages/SellPage"
+import CheckoutPage from "../pages/CheckoutPage";
+import MyOrders from "../pages/MyOrdersPage";
 
 const router = createBrowserRouter([
     {
@@ -26,7 +28,9 @@ const router = createBrowserRouter([
         children: [
             {path:"/", element:<LandingPage/>},
             {path:"/cart", element: <CartPage/> },
-            {path:"/sell-products", element: <SellPage/>}
+            {path:"/sell-products", element: <SellPage/>},
+            {path:"/checkout", element: <CheckoutPage/>},
+            {path:"/my-orders", element: <MyOrders/>}
         ]
     }
 ])

@@ -1,7 +1,14 @@
-export default function CartItem({cartItem, confirmRemoveItem}) {
+import { useState } from "react"
+import DangerConfirm from "./DangerConfirm"
+
+export default function CartItem({ cartItem, removeCartItem }) {
+    const [showConfirm, setShowConfirm] = useState(false)
 
     return (
         <div className="bg-white border border-zinc-200 rounded-xl p-5 flex gap-5 items-center">
+            {
+                showConfirm && <DangerConfirm onConfirm={() => removeCartItem(cartItem.id)} onCancel={() => setShowConfirm(false)} />
+            }
 
             <img
                 src={cartItem.imageURL}
@@ -14,7 +21,7 @@ export default function CartItem({cartItem, confirmRemoveItem}) {
                 </h3>
 
                 <p className="text-sm text-zinc-500">
-                    Excellent condition • Kozhikode
+                    {cartItem.description}
                 </p>
 
                 <div className="mt-2 font-semibold text-orange-600 text-lg">
@@ -22,25 +29,8 @@ export default function CartItem({cartItem, confirmRemoveItem}) {
                 </div>
             </div>
 
-            {/* Quantity */}
-            <div className="flex items-center gap-3">
-
-                <button className="w-8 h-8 border rounded-md hover:bg-zinc-100">
-                    -
-                </button>
-
-                <span className="font-medium">
-                    1
-                </span>
-
-                <button className="w-8 h-8 border rounded-md hover:bg-zinc-100">
-                    +
-                </button>
-
-            </div>
-
             {/* Remove */}
-            <button onClick={() => confirmRemoveItem(cartItem.id)} className="text-zinc-400 hover:text-red-500 text-lg">
+            <button onClick={() => setShowConfirm(true)} className="text-zinc-400 hover:text-red-500 text-lg">
                 <i className="fa-solid fa-trash"></i>
             </button>
 

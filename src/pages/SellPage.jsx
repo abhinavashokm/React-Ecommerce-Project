@@ -5,6 +5,7 @@ import { fetchMyProducts, removeProduct } from "../store/productSlice";
 import Loading from "../components/Loading"
 import ProductCard from "../components/ProductCard";
 import EmptyState from "../components/EmptyState";
+import toast from "react-hot-toast";
 
 export default function SellPage() {
   const [modal, setModal] = useState(null)
@@ -16,7 +17,13 @@ export default function SellPage() {
   }
 
   const handleRemoveProduct = async (productId) => {
-    dispatch(removeProduct(productId))
+        toast.promise(dispatch(removeProduct(productId)).unwrap(),
+      {
+        loading: "Removing product...",
+        success: "Product removed!",
+        error: "Failed to remove product!"
+      })
+    
   }
 
   useEffect(() => {
@@ -66,7 +73,7 @@ export default function SellPage() {
           {
             myProducts.map((product) => {
               return (
-                <ProductCard product={product} handleRemoveProduct={handleRemoveProduct} showActions={true} />
+                <ProductCard key={product.id} product={product} handleRemoveProduct={handleRemoveProduct} showActions={true} />
               )
             })
           }

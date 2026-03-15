@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { addDoc, collection, getDocs, deleteDoc, doc, query, where, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 
 export const addToCartService = async ({ id, name, price, imageURL, userId }) => {
@@ -23,4 +23,30 @@ export const fetchUserCartService = async (userId) => {
 
 export const deleteFromCartService = async (itemId) => {
     await deleteDoc(doc(db, "cart", itemId))
+}
+
+export const calculateSubtotal = (items) => {
+    if (items.length !== 0) {
+        return items.reduce((accum, current) => accum + Number(current.price), 0)
+    } else {
+        return 0
+    }
+}
+
+export const clearUserCart = async (userId) => {
+    try {
+        const q = query(
+            collection(db, "cart"),
+            where("userId", "==", userId)
+        )
+        const snapshot = await getDocs(q)
+        const batch = writeBatch(db)
+
+        snapshot.forEach((document) => {
+            batch.delete(doc(db, "cart", document.id))
+        })
+        await batch.commit()
+    }catch(error){
+        console.log("error on clear cart: ", error.message)
+    }
 }

@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth"
 const Navbar = () => {
   const [open, setOpen] = useState(false)
   const user = useSelector(store => store.auth.user)
+  const {items, loading} = useSelector(store => store.cart)
 
   const logout = () => {
     signOut(auth)
@@ -17,7 +18,7 @@ const Navbar = () => {
     <nav className="bg-white border-b border-zinc-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-        {/* /* Logo */ }
+        {/* /* Logo */}
         <Link to={"/"} className="flex items-center gap-2 cursor-pointer">
           <div className="w-9 h-9 bg-orange-500 text-white rounded-xl flex items-center justify-center text-lg font-bold">
             B
@@ -47,13 +48,25 @@ const Navbar = () => {
           <Link to={'/cart'} className="relative flex items-center gap-2 text-zinc-700 hover:text-orange-600 transition">
             <div className="relative">
               <i className="fa-solid fa-cart-shopping text-lg"></i>
-
-              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full">
-                0
+              {
+                !loading &&
+                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full">
+                {items.length}
               </span>
+              }
+              
             </div>
 
             <span className="hidden md:inline">Cart</span>
+          </Link>
+
+          {/* Orders */}
+          <Link
+            to={"/my-orders"}
+            className="flex items-center gap-2 text-zinc-700 hover:text-orange-600 transition"
+          >
+            <i className="fa-solid fa-box text-base"></i>
+            <span className="hidden md:inline">Orders</span>
           </Link>
 
           {/* User Dropdown */}
