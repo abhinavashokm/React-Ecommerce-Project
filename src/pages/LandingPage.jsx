@@ -6,6 +6,7 @@ import ProductCard from "../components/ProductCard"
 import Loading from "../components/Loading"
 import { addToCart } from "../store/cartSlice"
 import toast from "react-hot-toast"
+import EmptyState from "../components/EmptyState"
 
 const LandingPage = () => {
   const dispatch = useDispatch()
@@ -21,11 +22,22 @@ const LandingPage = () => {
       {
         loading: "Adding to cart...",
         success: "Added to cart",
-        error: "Failed to add item"
+        error: (err) => {
+          if (err.message === "ITEM_ALREADY_IN_CART") {
+            return "Item is already in cart!"
+          } else if (err.message === "ITEM_MISSING") {
+            dispatch(fetchPublicProducts())
+            return "Product is unavailable!"
+          } else if (err.message === "ITEM_ALREADY_SOLD") {
+            dispatch(fetchPublicProducts())
+            return "Product already sold!"
+          }
+          return "Failed to add item!"
+        }
       }
     )
-
   }
+
   return (
     <div>
 
@@ -70,19 +82,21 @@ const LandingPage = () => {
         {
           loading ?
             <Loading notFullPage={true} />
-            :
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            : publicProducts.length === 0 ?
+              <EmptyState />
+              :
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
 
-              {/* Product 1 */}
-              {
-                publicProducts.map(product => {
-                  return (
-                    <ProductCard key={product.id} product={product} showAddToCart={true} showSeller={true} handleAddToCart={handleAddToCart} />
-                  )
-                })
-              }
+                {/* Product 1 */}
+                {
+                  publicProducts.map(product => {
+                    return (
+                      <ProductCard key={product.id} product={product} showAddToCart={true} showSeller={true} handleAddToCart={handleAddToCart} />
+                    )
+                  })
+                }
 
-            </div>
+              </div>
         }
 
 

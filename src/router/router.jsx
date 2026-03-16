@@ -8,29 +8,30 @@ import CartPage from "../pages/CartPage";
 import SellPage from "../pages/SellPage"
 import CheckoutPage from "../pages/CheckoutPage";
 import MyOrders from "../pages/MyOrdersPage";
+import { RouteErrorBoundary } from "../errorComponents/RouteErrorBoundary";
 
 const router = createBrowserRouter([
     {
-        element: <AuthLayout/>,
+        element: <RouteErrorBoundary global={true}><AuthLayout /></RouteErrorBoundary>,
         children: [
             {
-                path:"/login",
-                element: <LoginPage/>
+                path: "/login",
+                element: <LoginPage />
             },
             {
-                path:"/signup",
-                element: <SignUpPage/>
+                path: "/signup",
+                element: <SignUpPage />
             }
         ]
     },
     {
-        element: <MainLayout/>,
+        element: <RouteErrorBoundary global={true} ><MainLayout /></RouteErrorBoundary>,
         children: [
-            {path:"/", element:<LandingPage/>},
-            {path:"/cart", element: <CartPage/> },
-            {path:"/sell-products", element: <SellPage/>},
-            {path:"/checkout", element: <CheckoutPage/>},
-            {path:"/my-orders", element: <MyOrders/>}
+            { path: "/", element: <LandingPage /> },
+            { path: "/cart", element: <RouteErrorBoundary><CartPage /></RouteErrorBoundary> },
+            { path: "/sell-products", element: <RouteErrorBoundary><SellPage /></RouteErrorBoundary> },
+            { path: "/checkout", element: <CheckoutPage /> },
+            { path: "/my-orders", element: <RouteErrorBoundary ><MyOrders /></RouteErrorBoundary> }
         ]
     }
 ])

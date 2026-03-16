@@ -1,4 +1,3 @@
-import ErrorBoundary from "../components/ErrorBoundar";
 import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
@@ -9,7 +8,7 @@ export default function MainLayout() {
     const { user, loading } = useSelector(store => store.auth)
 
     if (loading) {
-        return <Loading/>
+        return <Loading />
     }
 
     if (!user) {
@@ -18,9 +17,7 @@ export default function MainLayout() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <ErrorBoundary>
-                <Navbar />
-            </ErrorBoundary>
+            <Navbar />
             <main>
                 <Outlet />
             </main>

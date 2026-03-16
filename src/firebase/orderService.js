@@ -18,15 +18,16 @@ export const createOrderService = async (items, userId) => {
                 sellerName: item.sellerName ? item.sellerName : '',
                 sellerId: item.sellerId ? item.sellerId : ' '
             })
+
+            const productRef = doc(db, "products", item.productId)
+            batch.update(productRef, {
+                status: "sold"
+            })
         });
 
         await batch.commit()
 
-        items.forEach(item => {
-            updateProductStatus(item.productId, "sold")
-        })
-
-    }catch(error){
+    } catch (error) {
         console.log("error while creating order: ", error.message)
     }
 

@@ -3,21 +3,18 @@ import { signInWithEmailAndPassword } from "firebase/auth"
 import { Link } from "react-router-dom"
 import toast from "react-hot-toast"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import FormError from "../components/FormError"
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const { register, handleSubmit, formState: { errors } } = useForm()
 
-    const signIn = async (e) => {
-        e.preventDefault()
-        try {
-            await signInWithEmailAndPassword(auth, email, password)
-            toast.success("Login Successful!")
-        } catch (error) {
-            toast.error("Something went wrong!")
-            console.log("login error", error.message)
-        }
-
+    const signIn = async (data) => {
+        toast.promise(signInWithEmailAndPassword(auth, data.email, data.password), {
+            loading: "Loggin in..",
+            success: 'Login successful',
+            error: "Login failed!"
+        })
     }
     return (
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8">
@@ -36,7 +33,7 @@ const LoginPage = () => {
                 Login to your Bazaar account
             </p>
 
-            <form onSubmit={(e) => signIn(e)} className="space-y-4">
+            <form onSubmit={handleSubmit(signIn)} className="space-y-4">
 
                 <div>
                     <label className="block text-sm font-medium mb-1">
@@ -46,9 +43,17 @@ const LoginPage = () => {
                     <input
                         type="email"
                         placeholder="you@email.com"
-                        onChange={(e) => setEmail(e.target.value)}
+                        {...register("email", {
+                            required: "email is required",
+                            setValueAs: v => v.toLowerCase().trim(),
+                            pattern: {
+                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                message: "Please enter a valid email address"
+                            }
+                        })}
                         className="w-full border border-zinc-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg px-4 py-2.5 outline-none transition"
                     />
+                    {errors.email && <FormError msg={errors.email.message} />}
                 </div>
 
                 <div>
@@ -59,9 +64,12 @@ const LoginPage = () => {
                     <input
                         type="password"
                         placeholder="••••••••"
-                        onChange={(e) => setPassword(e.target.value)}
+                        {...register("password", {
+                            required: "password is required",
+                        })}
                         className="w-full border border-zinc-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg px-4 py-2.5 outline-none transition"
                     />
+                    {errors.password && <FormError msg={errors.password.message} />}
                 </div>
 
                 <button

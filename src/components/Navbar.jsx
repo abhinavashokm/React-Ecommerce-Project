@@ -77,7 +77,7 @@ const Navbar = () => {
               className="flex items-center gap-2 cursor-pointer"
             >
               <div className="w-8 h-8 bg-zinc-800 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                AK
+                {user?.displayName?.[0]}
               </div>
             </div>
 

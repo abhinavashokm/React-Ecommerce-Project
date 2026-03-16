@@ -1,15 +1,15 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createOrderService, fetchOrderService } from "../firebase/orderService";
-import { clearUserCart } from "../firebase/cartService";
+import { clearMyCart } from "./cartSlice";
 
 const getUserId = (getState) => getState().auth.user.id
 
 export const addOrder = createAsyncThunk(
     "order/addOrder",
-    async (payload, { getState }) => {
+    async (payload, { dispatch, getState }) => {
         const userId = await getUserId(getState)
         await createOrderService(payload, userId)
-        await clearUserCart(userId)
+        dispatch(clearMyCart())
     }
 )
 

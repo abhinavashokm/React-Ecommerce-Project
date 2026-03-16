@@ -53,5 +53,5 @@ export const deleteProduct = async (productId) => {
 
 export const fetchOtherUsersProducts = async (userId) => {
     const querySnapshot = await getDocs(collection(db, 'products'))
-    return querySnapshot.docs.filter(doc => userId !== doc.data().sellerId).map(doc => ({ id: doc.id, ...doc.data() }))
+    return querySnapshot.docs.filter(doc => userId !== doc.data().sellerId && doc.data().status !== 'sold').map(doc => ({ id: doc.id, ...doc.data() }))
 }

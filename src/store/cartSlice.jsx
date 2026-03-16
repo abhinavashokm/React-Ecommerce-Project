@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { addToCartService, fetchUserCartService, deleteFromCartService } from "../firebase/cartService";
+import { addToCartService, fetchUserCartService, deleteFromCartService, clearUserCart } from "../firebase/cartService";
 
 const getUserId = (getState) => getState().auth.user.id
 
@@ -18,6 +18,15 @@ export const fetchMyCart = createAsyncThunk(
         const userId = getUserId(getState)
         const cartItems = await fetchUserCartService(userId)
         return cartItems
+    }
+)
+
+export const clearMyCart = createAsyncThunk(
+    "cart/clearMyCart",
+    async( payload, {getState, dispatch}) => {
+        const userId = getUserId(getState)
+        await clearUserCart(userId)
+        dispatch(fetchMyCart())
     }
 )
 

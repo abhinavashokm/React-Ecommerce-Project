@@ -1,19 +1,55 @@
-import { addDoc, collection, getDocs, deleteDoc, doc, query, where, writeBatch } from "firebase/firestore";
+import { addDoc, collection, getDocs, getDoc, deleteDoc, doc, query, where, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 
-export const addToCartService = async ({ id, name, price, imageURL, userId }) => {
-    try {
-        await addDoc(collection(db, 'cart'), {
-            userId,
-            productId: id,
-            name,
-            price,
-            imageURL,
-            quantity: 1
-        })
-    } catch (error) {
-        console.log("something went wrong on addToCart Service")
+const isProductAvailable = async (productId) => {
+    const docRef = doc(db, "products", productId)
+    const snap = await getDoc(docRef)
+    console.log(snap.exists())
+    return snap.exists()
+}
+
+const isProductOnSale = async (productId) => {
+    const docRef = doc(db, "products", productId)
+    const snap = await getDoc(docRef)
+    if (!snap.exists()) {
+        throw new Error("ITEM_MISSING")
     }
+    const data = snap.data()
+    return data.status === 'onSale'
+}
+
+export const addToCartService = async ({ id, name, price, imageURL, userId, sellerId, sellerName }) => {
+    const q1 = query(
+        collection(db, "cart"),
+        where("userId", "==", userId),
+        where("productId", "==", id)
+    )
+    const cartExitsCheckSnapshot = await getDocs(q1)
+    const productAvailble = await isProductAvailable(id)
+    const productOnSale = await isProductOnSale(id)
+
+    if (!productAvailble) {
+        throw new Error("ITEM_MISSING")
+    }
+
+    if (!productOnSale) {
+        throw new Error("ITEM_ALREADY_SOLD")
+    }
+
+    if (!cartExitsCheckSnapshot.empty) {
+        throw new Error("ITEM_ALREADY_IN_CART")
+    }
+
+    await addDoc(collection(db, 'cart'), {
+        userId,
+        productId: id,
+        name,
+        price,
+        imageURL,
+        quantity: 1,
+        sellerId,
+        sellerName,
+    })
 }
 
 export const fetchUserCartService = async (userId) => {
@@ -46,7 +82,7 @@ export const clearUserCart = async (userId) => {
             batch.delete(doc(db, "cart", document.id))
         })
         await batch.commit()
-    }catch(error){
+    } catch (error) {
         console.log("error on clear cart: ", error.message)
     }
 }

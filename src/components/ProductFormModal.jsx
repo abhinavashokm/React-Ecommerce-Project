@@ -4,10 +4,11 @@ import { useDispatch } from "react-redux"
 import { uploadProductImage } from "../cloudinary/config"
 import toast from "react-hot-toast"
 import { useState } from "react"
+import FormError from "./FormError"
 
 
 export default function ProductFormModal({ mode, onClose, prefillData }) {
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       product_name: prefillData?.name,
       price: prefillData?.price,
@@ -17,9 +18,11 @@ export default function ProductFormModal({ mode, onClose, prefillData }) {
 
   const dispatch = useDispatch()
   const [imagePreview, setImagePreview] = useState(prefillData?.imageURL)
-  const imageRegister = register("image")
+  const imageRegister = register("image", {
+    required: mode === 'edit' ? false : "product image is required"
+  })
 
-  const postForm = async(data) => {
+  const postForm = async (data) => {
     const file = data.image[0]
     const imageURL = file ? await uploadProductImage(file) : prefillData?.imageURL
 
@@ -64,10 +67,18 @@ export default function ProductFormModal({ mode, onClose, prefillData }) {
               Product Name
             </label>
             <input
-              {...register("product_name")}
+              {...register("product_name", {
+                required: "product name is required",
+                setValueAs: (v) => v.trim(),
+                validate: (value) => {
+                  return value.trim().length > 0 || "Product name cannot be empty"
+                }
+              })}
               type="text"
               className="w-full border border-zinc-300 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
             />
+            {errors.product_name && <FormError msg={errors.product_name.message} />}
+
           </div>
 
           {/* Price */}
@@ -76,10 +87,22 @@ export default function ProductFormModal({ mode, onClose, prefillData }) {
               Price (₹)
             </label>
             <input
-              {...register("price")}
+              {...register("price", {
+                required: "price is required",
+                valueAsNumber: true,
+                min: {
+                  value: 1,
+                  message: "price must be greater than zero"
+                },
+                max: {
+                  value: 1000000,
+                  message: "Price is too high"
+                }
+              })}
               type="number"
               className="w-full border border-zinc-300 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
             />
+            {errors.price && <FormError msg={errors.price.message} />}
           </div>
 
           {/* Description */}
@@ -88,10 +111,14 @@ export default function ProductFormModal({ mode, onClose, prefillData }) {
               Description
             </label>
             <textarea
-              {...register("description")}
+              {...register("description", {
+                required: "description is required",
+                setValueAs: (v) => v.trim(),
+              })}
               rows="3"
               className="w-full border border-zinc-300 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
             ></textarea>
+            {errors.description && <FormError msg={errors.description.message} />}
           </div>
 
           {/* Image upload */}
@@ -127,6 +154,7 @@ export default function ProductFormModal({ mode, onClose, prefillData }) {
 
 
             </label>
+            {errors.image && <FormError msg={errors.image.message} />}
           </div>
 
         </form>

@@ -44,7 +44,7 @@ export default function MyOrders() {
                         {
                             myOrders.map((order) => {
                                 return (
-                                    <ProductCard key={order.id} product={order} />
+                                    <ProductCard key={order.id} product={order} showSeller={true} />
                                 )
                             })
                         }

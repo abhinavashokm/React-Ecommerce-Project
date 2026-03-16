@@ -3,25 +3,24 @@ import { useState } from "react"
 import { auth } from "../firebase/firebase"
 import { Link } from "react-router-dom"
 import toast from "react-hot-toast"
+import { useForm } from "react-hook-form"
+import FormError from "../components/FormError"
 
 export default function SignUpPage() {
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const { register, handleSubmit, formState: { errors } } = useForm()
 
-    const createAccount = async (e) => {
-        e.preventDefault()
-        try {
-            const userCredentials = await createUserWithEmailAndPassword(auth, email, password)
-
+    const createAccount = async (data) => {
+        const promise = async (data) => {
+            const userCredentials = await createUserWithEmailAndPassword(auth, data.email, data.password)
             await updateProfile(userCredentials.user, {
-                displayName: name
+                displayName: data.name
             })
-            toast.success("Signup Successful")
-        } catch (error) {
-            toast.error("Something went wrong")
-            console.log("error on signup: ", error.message)
         }
+        toast.promise(promise(data), {
+            loading: "creating account",
+            success: "account created!",
+            error: "Failed to create account!"
+        })
     }
 
     return (
@@ -44,7 +43,7 @@ export default function SignUpPage() {
             </p>
 
             {/* Form */}
-            <form onSubmit={(e) => createAccount(e)} className="space-y-4">
+            <form noValidate onSubmit={handleSubmit(createAccount)} className="space-y-4">
 
                 <div>
                     <label className="block text-sm font-medium mb-1">
@@ -54,9 +53,16 @@ export default function SignUpPage() {
                     <input
                         type="text"
                         placeholder="Abhinav K"
+                        {...register("name", {
+                            required: "name is required",
+                            validate: (value) => {
+                                return value.trim().length > 0 || "name cannot be empty"
+                            }
+                        })}
                         className="w-full border border-zinc-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg px-4 py-2.5 outline-none transition"
                         onChange={(e) => setName(e.target.value)}
                     />
+                    {errors.name && <FormError msg={errors.name.message} />}
                 </div>
 
                 <div>
@@ -67,9 +73,18 @@ export default function SignUpPage() {
                     <input
                         type="email"
                         placeholder="you@email.com"
+                        {...register("email", {
+                            required: "email is required",
+                            setValueAs: v => v.toLowerCase().trim(),
+                            pattern: {
+                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                message: "Please enter a valid email address"
+                            }
+                        })}
                         className="w-full border border-zinc-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg px-4 py-2.5 outline-none transition"
                         onChange={(e) => setEmail(e.target.value)}
                     />
+                    {errors.email && <FormError msg={errors.email.message} />}
                 </div>
 
                 <div>
@@ -80,9 +95,17 @@ export default function SignUpPage() {
                     <input
                         type="password"
                         placeholder="••••••••"
+                        {...register("password", {
+                            required: "password is required",
+                            minLength: {
+                                value: 6,
+                                message: "password need to be min 6 characters"
+                            }
+                        })}
                         className="w-full border border-zinc-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-lg px-4 py-2.5 outline-none transition"
                         onChange={(e) => setPassword(e.target.value)}
                     />
+                    {errors.password && <FormError msg={errors.password.message} />}
                 </div>
 
                 <button
